@@ -8,7 +8,6 @@ function getPool() {
     let config;
 
     if (process.env.NODE_ENV === "production") {
-      // Deploy trên Railway → dùng internal host
       config = {
         host: process.env.MYSQLHOST,
         port: Number(process.env.MYSQLPORT || 3306),
@@ -20,10 +19,12 @@ function getPool() {
         queueLimit: 0,
         multipleStatements: true,
       };
+      console.log("Đang khởi tạo kết nối MySQL cho môi trường PRODUCTION...");
     } else {
-      // Local → dùng public URL
       if (!process.env.MYSQL_PUBLIC_URL) {
-        throw new Error("MYSQL_PUBLIC_URL not set in .env for local testing");
+        throw new Error(
+          "Chưa thiết lập biến MYSQL_PUBLIC_URL trong file .env (dành cho local)"
+        );
       }
       const url = new URL(process.env.MYSQL_PUBLIC_URL);
       config = {
@@ -37,13 +38,15 @@ function getPool() {
         queueLimit: 0,
         multipleStatements: true,
       };
+      console.log("Đang khởi tạo kết nối MySQL cho môi trường LOCAL...");
     }
 
     pool = mysql.createPool(config);
-    console.log("✅ MySQL pool created with config:", {
-      host: config.host,
-      port: config.port,
-      database: config.database,
+    console.log("Đã tạo pool kết nối MySQL với cấu hình:");
+    console.log({
+      Máy_chủ: config.host,
+      Cổng: config.port,
+      Cơ_sở_dữ_liệu: config.database,
     });
   }
   return pool;

@@ -2,25 +2,17 @@ const express = require("express");
 const router = express.Router();
 const { getPool } = require("../db");
 
-// 🟩 CREATE product
+// CREATE product
 router.post("/", async (req, res) => {
   try {
-    const {
-      product_name,
-      description,
-      price = 0,
-      stock = 0,
-      image_url = "",
-    } = req.body;
-
+    const { name, description, price = 0, stock = 0, image = "" } = req.body;
     const pool = await getPool();
     const [result] = await pool.execute(
       `INSERT INTO products 
-       (product_name, description, price, stock, image_url, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
-      [product_name, description, price, stock, image_url]
+       (name, description, price, stock, image, created_at)
+       VALUES (?, ?, ?, ?, ?, NOW())`,
+      [name, description, price, stock, image]
     );
-
     res.status(201).json({ message: "Created", id: result.insertId });
   } catch (err) {
     console.error("POST /api/products error:", err);
@@ -28,17 +20,13 @@ router.post("/", async (req, res) => {
   }
 });
 
-// 🟦 READ list (with search & pagination)
 router.get("/", async (req, res) => {
   try {
     const { q, page = 1, limit = 10, minPrice, maxPrice } = req.query;
-
     let pageNum = parseInt(page, 10);
-    if (isNaN(pageNum) || pageNum < 1) pageNum = 1;
-
     let limitNum = parseInt(limit, 10);
+    if (isNaN(pageNum) || pageNum < 1) pageNum = 1;
     if (isNaN(limitNum) || limitNum < 1) limitNum = 10;
-
     const offsetNum = (pageNum - 1) * limitNum;
     const pool = await getPool();
 
@@ -46,7 +34,7 @@ router.get("/", async (req, res) => {
     let params = [];
 
     if (q) {
-      where.push("(product_name LIKE ? OR description LIKE ?)");
+      where.push("(name LIKE ? OR description LIKE ?)");
       params.push(`%${q}%`, `%${q}%`);
     }
     if (minPrice) {
@@ -60,21 +48,19 @@ router.get("/", async (req, res) => {
 
     const whereClause = where.length ? "WHERE " + where.join(" AND ") : "";
 
-    // Count total
     const [countRows] = await pool.execute(
       `SELECT COUNT(*) AS total FROM products ${whereClause}`,
       params
     );
     const total = countRows[0].total;
 
-    const sql = `
-      SELECT * FROM products
-      ${whereClause}
-      ORDER BY created_at DESC
+    const query = `
+      SELECT id, name, description, price, stock, image, created_at
+      FROM products ${whereClause}
+      ORDER BY id ASC
       LIMIT ${limitNum} OFFSET ${offsetNum}
     `;
-
-    const [rows] = await pool.execute(sql, params);
+    const [rows] = await pool.execute(query, params);
 
     res.json({
       data: rows,
@@ -89,12 +75,12 @@ router.get("/", async (req, res) => {
   }
 });
 
-// 🟨 READ one product
 router.get("/:id", async (req, res) => {
   try {
     const pool = await getPool();
     const [rows] = await pool.execute(
-      "SELECT * FROM products WHERE product_id = ?",
+      `SELECT id, name, description, price, stock, image, created_at
+       FROM products WHERE id = ?`,
       [req.params.id]
     );
 
@@ -106,17 +92,16 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// 🟧 UPDATE product
+// UPDATE product
 router.put("/:id", async (req, res) => {
   try {
-    const { product_name, description, price, stock, image_url } = req.body;
-
+    const { name, description, price, stock, image } = req.body;
     const pool = await getPool();
     const [result] = await pool.execute(
-      `UPDATE products 
-       SET product_name=?, description=?, price=?, stock=?, image_url=?, updated_at=NOW()
-       WHERE product_id=?`,
-      [product_name, description, price, stock, image_url, req.params.id]
+      `UPDATE products
+       SET name=?, description=?, price=?, stock=?, image=?, updated_at=NOW()
+       WHERE id=?`,
+      [name, description, price, stock, image, req.params.id]
     );
 
     if (result.affectedRows === 0)
@@ -129,14 +114,13 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// 🟥 DELETE product
+// DELETE product
 router.delete("/:id", async (req, res) => {
   try {
     const pool = await getPool();
-    const [result] = await pool.execute(
-      "DELETE FROM products WHERE product_id=?",
-      [req.params.id]
-    );
+    const [result] = await pool.execute("DELETE FROM products WHERE id=?", [
+      req.params.id,
+    ]);
 
     if (result.affectedRows === 0)
       return res.status(404).json({ error: "Not found" });

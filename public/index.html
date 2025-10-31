@@ -1,9 +1,10 @@
+<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Quản Lý Sản Phẩm</title>
+    <title>Danh Sách Sản Phẩm</title>
     <style>
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -12,51 +13,17 @@
         background: #f9f9f9;
         color: #333;
       }
-      h1,
-      h2 {
+      h1 {
         text-align: center;
         color: #2c3e50;
       }
-      form,
-      .search-container,
-      table {
+      table,
+      .search-container {
         background: #fff;
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         margin-bottom: 20px;
-      }
-      input,
-      button,
-      textarea {
-        padding: 8px;
-        margin: 5px 0;
-        width: 100%;
-        max-width: 400px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-        box-sizing: border-box;
-      }
-      button {
-        cursor: pointer;
-        background: #3498db;
-        color: #fff;
-        border: none;
-        transition: 0.2s;
-      }
-      button:hover {
-        background: #2980b9;
-      }
-      button.delete-btn {
-        background: #e74c3c;
-      }
-      button.delete-btn:hover {
-        background: #c0392b;
-      }
-      label {
-        font-weight: bold;
-        display: block;
-        margin-top: 10px;
       }
       table {
         width: 100%;
@@ -72,69 +39,76 @@
         background: #2c3e50;
         color: #fff;
       }
-      tr:nth-child(even) {
-        background: #f2f2f2;
+      button {
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
       }
-      img {
-        border-radius: 4px;
+      button:hover {
+        background: #2980b9;
       }
-      .flex-row {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        justify-content: center;
+      .delete-btn {
+        background: #e74c3c;
+      }
+      .delete-btn:hover {
+        background: #c0392b;
       }
       .pagination {
         display: flex;
         gap: 5px;
         justify-content: center;
-        margin-top: 10px;
       }
-      .pagination button {
-        width: 40px;
+      .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
       }
-      @media (max-width: 600px) {
-        input,
-        button,
-        textarea {
-          max-width: 100%;
-        }
+      input {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      .price-range {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .price-range input {
+        width: 100px;
+        padding: 6px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      .price-range label {
+        font-weight: bold;
+        margin-right: 5px;
       }
     </style>
   </head>
   <body>
-    <h1>Quản Lý Sản Phẩm</h1>
+    <h1>Danh Sách Sản Phẩm</h1>
 
-    <h2>Thêm / Sửa Sản Phẩm</h2>
-    <form id="product-form">
-      <input type="hidden" id="product_id" />
-      <label for="product_name">Tên sản phẩm</label>
-      <input id="product_name" required />
-      <label for="description">Mô tả</label>
-      <textarea id="description" rows="2"></textarea>
-      <label for="price">Giá</label>
-      <input id="price" type="number" min="0" step="0.01" value="0" />
-      <label for="stock">Số lượng</label>
-      <input id="stock" type="number" min="0" value="0" />
-      <label for="image_url">URL hình ảnh</label>
-      <input id="image_url" />
-      <div class="flex-row">
-        <button type="submit">Lưu sản phẩm</button>
-        <button type="button" id="reset-btn">Đặt lại</button>
-      </div>
-    </form>
-
-    <h2>Tìm kiếm & Lọc</h2>
-    <div class="search-container">
-      <div class="flex-row">
-        <input type="text" id="search-query" placeholder="Tên hoặc mô tả..." />
-        <input type="number" id="minPrice" placeholder="Giá từ" />
-        <input type="number" id="maxPrice" placeholder="Đến" />
-        <button id="search-btn">Tìm kiếm</button>
-      </div>
+    <div class="top-bar">
+      <button onclick="window.location.href='add.html'">
+        ➕ Thêm sản phẩm
+      </button>
     </div>
 
-    <h2>Danh sách sản phẩm</h2>
+    <div class="search-container">
+      <input id="search-query" placeholder="Tên hoặc mô tả..." />
+      <div class="price-range">
+        <label>Giá (VNĐ):</label>
+        <input id="minPrice" type="number" placeholder="Từ" />
+        <span> - </span>
+        <input id="maxPrice" type="number" placeholder="Đến" />
+      </div>
+      <button id="search-btn">Tìm kiếm</button>
+    </div>
+
     <table id="products-table">
       <thead>
         <tr>
@@ -149,14 +123,14 @@
       </thead>
       <tbody></tbody>
     </table>
-    <div class="pagination" id="pagination"></div>
+
+    <div id="pagination" class="pagination"></div>
 
     <script>
       const apiBase = "/api/products";
       let currentPage = 1;
       const limit = 5;
 
-      // Lấy dữ liệu sản phẩm
       async function fetchProducts(
         q = "",
         minPrice = "",
@@ -170,29 +144,29 @@
         return res.json();
       }
 
-      // Hiển thị danh sách sản phẩm
       function renderProducts(products) {
         const tbody = document.querySelector("#products-table tbody");
         tbody.innerHTML = "";
         for (const p of products) {
           const tr = document.createElement("tr");
           tr.innerHTML = `
-      <td>${p.id}</td>
-      <td>${p.name}</td>
-      <td>${p.description}</td>
-      <td>${p.price}</td>
-      <td>${p.stock ?? 0}</td>
-      <td>${p.image ? `<img src="${p.image}" width="50"/>` : ""}</td>
-      <td>
-        <button onclick="editProduct(${p.id})">Sửa</button>
-        <button class="delete-btn" onclick="deleteProduct(${p.id})">Xóa</button>
-      </td>
-    `;
+            <td>${p.id}</td>
+            <td>${p.name}</td>
+            <td>${p.description}</td>
+            <td>${Number(p.price).toLocaleString()} ₫</td>
+            <td>${p.stock ?? 0}</td>
+            <td>${p.image ? `<img src="${p.image}" width="50"/>` : ""}</td>
+            <td>
+              <button onclick="editProduct(${p.id})">Sửa</button>
+              <button class="delete-btn" onclick="deleteProduct(${
+                p.id
+              })">Xóa</button>
+            </td>
+          `;
           tbody.appendChild(tr);
         }
       }
 
-      // Phân trang
       function renderPagination(totalPages) {
         const container = document.getElementById("pagination");
         container.innerHTML = "";
@@ -208,7 +182,6 @@
         }
       }
 
-      // Load sản phẩm
       async function loadProducts() {
         const q = document.getElementById("search-query").value.trim();
         const minPrice = document.getElementById("minPrice").value;
@@ -218,21 +191,6 @@
         renderPagination(data.totalPages);
       }
 
-      // Sửa sản phẩm
-      async function editProduct(id) {
-        const res = await fetch(`${apiBase}/${id}`);
-        if (!res.ok) return alert("Không tìm thấy sản phẩm");
-        const p = await res.json();
-        document.getElementById("product_id").value = p.id;
-        document.getElementById("product_name").value = p.name;
-        document.getElementById("description").value = p.description;
-        document.getElementById("price").value = p.price;
-        document.getElementById("stock").value = p.stock ?? 0;
-        document.getElementById("image_url").value = p.image ?? "";
-        window.scrollTo(0, 0);
-      }
-
-      // Xóa sản phẩm
       async function deleteProduct(id) {
         if (!confirm("Bạn có chắc muốn xóa không?")) return;
         const res = await fetch(`${apiBase}/${id}`, { method: "DELETE" });
@@ -242,54 +200,33 @@
         } else alert("Xóa thất bại");
       }
 
-      // Thêm / Cập nhật sản phẩm
-      document
-        .getElementById("product-form")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const id = document.getElementById("product_id").value;
-          const payload = {
-            name: document.getElementById("product_name").value,
-            description: document.getElementById("description").value,
-            price: Number(document.getElementById("price").value),
-            stock: Number(document.getElementById("stock").value),
-            image: document.getElementById("image_url").value,
-          };
-          let res;
-          if (id) {
-            res = await fetch(`${apiBase}/${id}`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-          } else {
-            res = await fetch(apiBase, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-          }
-          if (res.ok) {
-            alert(id ? "Cập nhật thành công" : "Thêm thành công");
-            resetForm();
-            loadProducts();
-          } else alert("Lỗi khi lưu sản phẩm");
-        });
-
-      // Đặt lại form
-      document.getElementById("reset-btn").addEventListener("click", resetForm);
-      function resetForm() {
-        document.getElementById("product-form").reset();
-        document.getElementById("product_id").value = "";
+      function editProduct(id) {
+        window.location.href = `edit.html?id=${id}`;
       }
 
-      // Tìm kiếm
       document.getElementById("search-btn").addEventListener("click", () => {
+        const minPrice = document.getElementById("minPrice").value.trim();
+        const maxPrice = document.getElementById("maxPrice").value.trim();
+
+        if ((minPrice && !maxPrice) || (!minPrice && maxPrice)) {
+          alert(" Vui lòng nhập đầy đủ cả giá TỪ và giá ĐẾN!");
+          return;
+        }
+
+        if (minPrice < 0 || maxPrice < 0) {
+          alert("Giá không được âm!");
+          return;
+        }
+
+        if (minPrice && maxPrice && Number(minPrice) > Number(maxPrice)) {
+          alert("Giá TỪ không được lớn hơn giá ĐẾN!");
+          return;
+        }
+
         currentPage = 1;
         loadProducts();
       });
 
-      // Load lần đầu
       loadProducts();
     </script>
   </body>

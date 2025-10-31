@@ -18,6 +18,7 @@ function getPool() {
         connectionLimit: 10,
         queueLimit: 0,
         multipleStatements: true,
+        timezone: "+07:00",
       };
       console.log("Đang khởi tạo kết nối MySQL cho môi trường PRODUCTION...");
     } else {
@@ -37,6 +38,7 @@ function getPool() {
         connectionLimit: 10,
         queueLimit: 0,
         multipleStatements: true,
+        timezone: "+07:00",
       };
       console.log("Đang khởi tạo kết nối MySQL cho môi trường LOCAL...");
     }

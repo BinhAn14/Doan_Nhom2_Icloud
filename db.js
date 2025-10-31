@@ -15,6 +15,7 @@ function getPool() {
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
+      multipleStatements: true,
     });
     console.log("✅ MySQL pool created");
   }

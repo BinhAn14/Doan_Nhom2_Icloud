@@ -50,12 +50,6 @@
       button:hover {
         background: #2980b9;
       }
-      .delete-btn {
-        background: #e74c3c;
-      }
-      .delete-btn:hover {
-        background: #c0392b;
-      }
       .pagination {
         display: flex;
         gap: 5px;
@@ -92,8 +86,10 @@
   <body>
     <h1>Danh Sách Sản Phẩm</h1>
 
-    <div class="top-bar">
-      <button onclick="window.location.href='add.html'">
+    <div class="top-bar" id="top-bar">
+      <span id="user-email"></span>
+      <button id="logout-btn">Đăng xuất</button>
+      <button id="add-product-btn" style="display:none;" onclick="window.location.href='add.html'">
         ➕ Thêm sản phẩm
       </button>
     </div>
@@ -118,7 +114,6 @@
           <th>Giá</th>
           <th>Số lượng</th>
           <th>Hình ảnh</th>
-          <th>Hành động</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -130,13 +125,23 @@
       const apiBase = "/api/products";
       let currentPage = 1;
       const limit = 5;
+      let currentUser = null;
 
-      async function fetchProducts(
-        q = "",
-        minPrice = "",
-        maxPrice = "",
-        page = 1
-      ) {
+      async function checkUser() {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        if (!res.ok) {
+          window.location.href = "/login.html";
+          return;
+        }
+        currentUser = await res.json();
+        document.getElementById("user-email").textContent = "Xin chào: " + currentUser.email;
+        if (currentUser.role === "admin") {
+          document.getElementById("add-product-btn").style.display = "inline-block";
+        }
+      }
+      checkUser();
+
+      async function fetchProducts(q = "", minPrice = "", maxPrice = "", page = 1) {
         const params = new URLSearchParams({ q, page, limit });
         if (minPrice) params.append("minPrice", minPrice);
         if (maxPrice) params.append("maxPrice", maxPrice);
@@ -156,12 +161,6 @@
             <td>${Number(p.price).toLocaleString()} ₫</td>
             <td>${p.stock ?? 0}</td>
             <td>${p.image ? `<img src="${p.image}" width="50"/>` : ""}</td>
-            <td>
-              <button onclick="editProduct(${p.id})">Sửa</button>
-              <button class="delete-btn" onclick="deleteProduct(${
-                p.id
-              })">Xóa</button>
-            </td>
           `;
           tbody.appendChild(tr);
         }
@@ -191,40 +190,28 @@
         renderPagination(data.totalPages);
       }
 
-      async function deleteProduct(id) {
-        if (!confirm("Bạn có chắc muốn xóa không?")) return;
-        const res = await fetch(`${apiBase}/${id}`, { method: "DELETE" });
-        if (res.ok) {
-          alert("Đã xóa");
-          loadProducts();
-        } else alert("Xóa thất bại");
-      }
-
-      function editProduct(id) {
-        window.location.href = `edit.html?id=${id}`;
-      }
-
       document.getElementById("search-btn").addEventListener("click", () => {
         const minPrice = document.getElementById("minPrice").value.trim();
         const maxPrice = document.getElementById("maxPrice").value.trim();
-
         if ((minPrice && !maxPrice) || (!minPrice && maxPrice)) {
-          alert(" Vui lòng nhập đầy đủ cả giá TỪ và giá ĐẾN!");
+          alert("Vui lòng nhập đầy đủ cả giá TỪ và giá ĐẾN!");
           return;
         }
-
         if (minPrice < 0 || maxPrice < 0) {
           alert("Giá không được âm!");
           return;
         }
-
         if (minPrice && maxPrice && Number(minPrice) > Number(maxPrice)) {
           alert("Giá TỪ không được lớn hơn giá ĐẾN!");
           return;
         }
-
         currentPage = 1;
         loadProducts();
+      });
+
+      document.getElementById("logout-btn").addEventListener("click", async () => {
+        await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+        window.location.href = "/login.html";
       });
 
       loadProducts();

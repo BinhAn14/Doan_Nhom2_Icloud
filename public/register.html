@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Đăng ký</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 400px;
+      margin: 50px auto;
+      background: #f9f9f9;
+      color: #333;
+    }
+    h1 { text-align: center; color: #2c3e50; }
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    label { font-weight: bold; display: block; margin-top: 10px; }
+    input, button {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      background: #27ae60;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+    button:hover { background: #1e8449; }
+    .link { text-align: center; margin-top: 10px; }
+    .link a { color: #3498db; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <h1>Đăng ký</h1>
+  <form id="register-form">
+    <label>Email</label>
+    <input type="email" id="email" required />
+    <label>Mật khẩu</label>
+    <input type="password" id="password" required />
+    <button type="submit">Đăng ký</button>
+  </form>
+  <div class="link">
+    <a href="login.html">Đăng nhập</a>
+  </div>
+
+  <script>
+    document.getElementById("register-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const payload = {
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value
+      };
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if(res.ok){
+        alert("Đăng ký thành công, vui lòng đăng nhập!");
+        window.location.href = "login.html";
+      } else {
+        alert(data.error || "Đăng ký thất bại");
+      }
+    });
+  </script>
+</body>
+</html>

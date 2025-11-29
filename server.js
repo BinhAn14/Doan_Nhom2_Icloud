@@ -11,7 +11,7 @@ const app = express();
 app.use(cors({ origin: true, credentials: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
+// NOTE: static serving is registered after the explicit root route below
 
 // --- Routers ---
 const productsRouter = require("./routes/products");
@@ -35,6 +35,12 @@ app.get("/register", (req, res) => {
 app.get("/admin", (req, res) => {
     res.sendFile(path.join(__dirname, "public/admin.html"));
 });
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public/home.html"));
+});
+
+app.use(express.static(path.join(__dirname, "public")));
 
 
 app.get("*", (req, res) => {

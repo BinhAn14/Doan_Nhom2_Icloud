@@ -20,5 +20,17 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
-  }
+  },
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BinhAn14/Doan_Nhom2_Icloud.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BinhAn14/Doan_Nhom2_Icloud/issues"
+  },
+  "homepage": "https://github.com/BinhAn14/Doan_Nhom2_Icloud#readme"
 }

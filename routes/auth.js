@@ -39,7 +39,7 @@ router.post("/login", async(req, res) => {
 
         const user = rows[0];
 
-        // Log thông tin để debug
+
         console.log("Email nhập:", email);
         console.log("Password nhập:", password);
         console.log("Hash password trong DB:", user.password);

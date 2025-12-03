@@ -33,8 +33,8 @@ router.get("/", async(req, res) => {
         let params = [];
 
         if (q) {
-            where.push("name LIKE ?");
-            params.push(`%${q}%`);
+            where.push("(name LIKE ? OR description LIKE ?)");
+            params.push(`%${q}%`, `%${q}%`);
         }
         if (minPrice) {
             where.push("price >= ?");

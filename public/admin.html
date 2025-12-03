@@ -337,7 +337,7 @@
 
     // --- PRODUCTS ---
     async function fetchProducts(q = "", minPrice = "", maxPrice = "", page = 1) {
-      const params = new URLSearchParams({ name, page, limit });
+      const params = new URLSearchParams({ q, page, limit });
       if (minPrice) params.append("minPrice", minPrice);
       if (maxPrice) params.append("maxPrice", maxPrice);
       const res = await fetch(`${apiProducts}?${params}`, { credentials: "include" });
@@ -381,7 +381,7 @@
     }
 
     async function loadProducts() {
-      const name = document.getElementById("search-query").value.trim();
+      const q = document.getElementById("search-query").value.trim();
       const minPrice = document.getElementById("minPrice").value;
       const maxPrice = document.getElementById("maxPrice").value;
       const data = await fetchProducts(q, minPrice, maxPrice, currentPage);
